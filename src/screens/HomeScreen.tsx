@@ -6,7 +6,7 @@ import {
   Button,
   StyleSheet,
   ActivityIndicator,
-  useColorScheme,
+  Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { getWeather, loadLastCity } from '../redux/weatherSlice';
@@ -14,6 +14,7 @@ import { RootState, AppDispatch } from '../redux/store';
 import WeatherCard from '../components/WeatherCard';
 import { toggleTheme } from '../redux/themeSlice';
 import { lightColors, darkColors } from '../theme/colors';
+import NetInfo from '@react-native-community/netinfo';
 
 const HomeScreen = () => {
   const [cityInput, setCityInput] = useState('');
@@ -26,10 +27,16 @@ const HomeScreen = () => {
   const theme = useSelector((state: RootState) => state.theme.mode);
   const colors = theme === 'dark' ? darkColors : lightColors;
 
-  const handleSearch = () => {
-    if (cityInput.trim() !== '') {
-      dispatch(getWeather(cityInput));
+  const handleSearch = async () => {
+    if (cityInput.trim() === '') return;
+  
+    const netInfo = await NetInfo.fetch();
+    if (!netInfo.isConnected) {
+      Alert.alert('No internet connection');
+      return;
     }
+  
+    dispatch(getWeather(cityInput));
   };
 
   useEffect(() => {
